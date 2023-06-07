@@ -5,7 +5,9 @@ import { formatPriceImpact } from '@uniswap/conedison/format'
 import { Percent, TradeType } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import Column from 'components/Column'
-import { MouseoverTooltip } from 'components/Tooltip'
+import { MouseoverTooltip, TooltipSize } from 'components/Tooltip'
+import { useGasBreakdown } from 'hooks/useGasBreakdown'
+import { Allowance } from 'hooks/usePermit2Allowance'
 import useTransactionDeadline from 'hooks/useTransactionDeadline'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
 import { ReactNode } from 'react'
@@ -22,6 +24,7 @@ import { getPriceImpactWarning } from 'utils/prices'
 
 import { ButtonError, SmallButtonPrimary } from '../Button'
 import Row, { AutoRow, RowBetween, RowFixed } from '../Row'
+import { GasBreakdownTooltip } from './GasBreakdownTooltip'
 import { SwapCallbackError, SwapShowAcceptChanges } from './styleds'
 import { Label } from './SwapModalHeaderAmount'
 
@@ -46,6 +49,7 @@ const DetailRowValue = styled(ThemedText.BodySmall)`
 
 export default function SwapModalFooter({
   trade,
+  allowance,
   allowedSlippage,
   hash,
   onConfirm,
@@ -58,6 +62,7 @@ export default function SwapModalFooter({
   onAcceptChanges,
 }: {
   trade: InterfaceTrade
+  allowance?: Allowance
   hash?: string
   allowedSlippage: Percent
   onConfirm: () => void
@@ -81,6 +86,12 @@ export default function SwapModalFooter({
   const labelInverted = `${trade.executionPrice.quoteCurrency?.symbol}`
   const formattedPrice = formatTransactionAmount(priceToPreciseFloat(trade.executionPrice))
 
+  const {
+    total: totalGasEstimate,
+    approvalEstimate,
+    swapEstimate,
+  } = useGasBreakdown({ trade, allowance, nativeCurrency })
+
   return (
     <>
       <DetailsContainer gap="md">
@@ -102,10 +113,21 @@ export default function SwapModalFooter({
               }
             >
               <Label cursor="help">
-                <Trans>Network fee</Trans>
+                <Trans>Network fees</Trans>
               </Label>
             </MouseoverTooltip>
-            <DetailRowValue>{trade.gasUseEstimateUSD ? `~$${trade.gasUseEstimateUSD}` : '-'}</DetailRowValue>
+
+            <MouseoverTooltip
+              // If there is only one transaction/estimate, we don't need a breakdown.
+              disabled={!(approvalEstimate || swapEstimate)}
+              placement="right"
+              size={TooltipSize.Small}
+              text={
+                <GasBreakdownTooltip trade={trade} swapEstimate={swapEstimate} approvalEstimate={approvalEstimate} />
+              }
+            >
+              <DetailRowValue>{totalGasEstimate}</DetailRowValue>
+            </MouseoverTooltip>
           </Row>
         </ThemedText.BodySmall>
         <ThemedText.BodySmall>

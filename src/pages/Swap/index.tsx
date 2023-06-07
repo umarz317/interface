@@ -658,6 +658,7 @@ export function Swap({
             syncing={routeIsSyncing}
             loading={routeIsLoading}
             allowedSlippage={allowedSlippage}
+            allowance={allowance}
           />
         )}
         {showPriceImpactWarning && <PriceImpactWarning priceImpact={largerPriceImpact} />}

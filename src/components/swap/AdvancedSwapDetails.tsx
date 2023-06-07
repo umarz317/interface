@@ -5,6 +5,8 @@ import { Percent, TradeType } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { LoadingRows } from 'components/Loader/styled'
 import { SUPPORTED_GAS_ESTIMATE_CHAIN_IDS } from 'constants/chains'
+import { useGasBreakdown } from 'hooks/useGasBreakdown'
+import { Allowance } from 'hooks/usePermit2Allowance'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
 import { InterfaceTrade } from 'state/routing/types'
 import formatPriceImpact from 'utils/formatPriceImpact'
@@ -13,6 +15,7 @@ import { Separator, ThemedText } from '../../theme'
 import Column from '../Column'
 import { RowBetween, RowFixed } from '../Row'
 import { MouseoverTooltip, TooltipSize } from '../Tooltip'
+import { GasBreakdownTooltip } from './GasBreakdownTooltip'
 import RouterLabel from './RouterLabel'
 import SwapRoute from './SwapRoute'
 
@@ -20,6 +23,7 @@ interface AdvancedSwapDetailsProps {
   trade: InterfaceTrade
   allowedSlippage: Percent
   syncing?: boolean
+  allowance?: Allowance
 }
 
 function TextWithLoadingPlaceholder({
@@ -40,9 +44,15 @@ function TextWithLoadingPlaceholder({
   )
 }
 
-export function AdvancedSwapDetails({ trade, allowedSlippage, syncing = false }: AdvancedSwapDetailsProps) {
+export function AdvancedSwapDetails({ trade, allowedSlippage, syncing = false, allowance }: AdvancedSwapDetailsProps) {
   const { chainId } = useWeb3React()
   const nativeCurrency = useNativeCurrency(chainId)
+
+  const {
+    total: totalGasEstimate,
+    approvalEstimate,
+    swapEstimate,
+  } = useGasBreakdown({ trade, allowance, nativeCurrency })
 
   return (
     <Column gap="md">
@@ -57,12 +67,20 @@ export function AdvancedSwapDetails({ trade, allowedSlippage, syncing = false }:
             }
           >
             <ThemedText.BodySmall color="textSecondary">
-              <Trans>Network fee</Trans>
+              <Trans>Network fees</Trans>
             </ThemedText.BodySmall>
           </MouseoverTooltip>
-          <TextWithLoadingPlaceholder syncing={syncing} width={50}>
-            <ThemedText.BodySmall>~${trade.gasUseEstimateUSD}</ThemedText.BodySmall>
-          </TextWithLoadingPlaceholder>
+          <MouseoverTooltip
+            // If there is only one transaction/estimate, we don't need a breakdown.
+            disabled={!(approvalEstimate || swapEstimate)}
+            placement="right"
+            size={TooltipSize.Small}
+            text={<GasBreakdownTooltip trade={trade} swapEstimate={swapEstimate} approvalEstimate={approvalEstimate} />}
+          >
+            <TextWithLoadingPlaceholder syncing={syncing} width={50}>
+              <ThemedText.BodySmall>~{totalGasEstimate}</ThemedText.BodySmall>
+            </TextWithLoadingPlaceholder>
+          </MouseoverTooltip>
         </RowBetween>
       )}
       <RowBetween>

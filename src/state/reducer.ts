@@ -1,3 +1,4 @@
+import { gasApi } from 'api/gas/slice'
 import multicall from 'lib/state/multicall'
 
 import application from './application/reducer'
@@ -29,4 +30,5 @@ export default {
   logs,
   [routingApi.reducerPath]: routingApi.reducer,
   [routingApiV2.reducerPath]: routingApiV2.reducer,
+  [gasApi.reducerPath]: gasApi.reducer,
 }

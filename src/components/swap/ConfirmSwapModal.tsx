@@ -248,6 +248,7 @@ export default function ConfirmSwapModal({
             startSwapFlow()
           }}
           trade={trade}
+          allowance={allowance}
           hash={txHash}
           allowedSlippage={allowedSlippage}
           disabledConfirm={showAcceptChanges}

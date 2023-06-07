@@ -8,6 +8,7 @@ import Column from 'components/Column'
 import { LoadingOpacityContainer } from 'components/Loader/styled'
 import { RowBetween, RowFixed } from 'components/Row'
 import { SUPPORTED_GAS_ESTIMATE_CHAIN_IDS } from 'constants/chains'
+import { Allowance } from 'hooks/usePermit2Allowance'
 import { useState } from 'react'
 import { ChevronDown } from 'react-feather'
 import { InterfaceTrade } from 'state/routing/types'
@@ -96,9 +97,16 @@ interface SwapDetailsInlineProps {
   syncing: boolean
   loading: boolean
   allowedSlippage: Percent
+  allowance?: Allowance
 }
 
-export default function SwapDetailsDropdown({ trade, syncing, loading, allowedSlippage }: SwapDetailsInlineProps) {
+export default function SwapDetailsDropdown({
+  trade,
+  syncing,
+  loading,
+  allowedSlippage,
+  allowance,
+}: SwapDetailsInlineProps) {
   const theme = useTheme()
   const { chainId } = useWeb3React()
   const [showDetails, setShowDetails] = useState(false)
@@ -152,7 +160,12 @@ export default function SwapDetailsDropdown({ trade, syncing, loading, allowedSl
       {trade && (
         <AnimatedDropdown open={showDetails}>
           <SwapDetailsWrapper data-testid="advanced-swap-details">
-            <AdvancedSwapDetails trade={trade} allowedSlippage={allowedSlippage} syncing={syncing} />
+            <AdvancedSwapDetails
+              trade={trade}
+              allowedSlippage={allowedSlippage}
+              syncing={syncing}
+              allowance={allowance}
+            />
           </SwapDetailsWrapper>
         </AnimatedDropdown>
       )}

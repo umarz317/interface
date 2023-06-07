@@ -1,5 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit'
 import { setupListeners } from '@reduxjs/toolkit/query/react'
+import { gasApi } from 'api/gas/slice'
 import { load, save } from 'redux-localstorage-simple'
 import { isTestEnv } from 'utils/env'
 
@@ -26,6 +27,7 @@ const store = configureStore({
     })
       .concat(routingApi.middleware)
       .concat(routingApiV2.middleware)
+      .concat(gasApi.middleware)
       .concat(save({ states: PERSISTED_KEYS, debounce: 1000 })),
   preloadedState: load({ states: PERSISTED_KEYS, disableWarnings: isTestEnv() }),
 })
