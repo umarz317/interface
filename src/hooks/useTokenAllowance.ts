@@ -1,4 +1,3 @@
-import { BigNumberish } from '@ethersproject/bignumber'
 import { ContractTransaction } from '@ethersproject/contracts'
 import { CurrencyAmount, MaxUint256, Token } from '@uniswap/sdk-core'
 import { useTokenContract } from 'hooks/useContract'
@@ -49,7 +48,7 @@ export function useUpdateTokenAllowance(
       if (!contract) throw new Error('missing contract')
       if (!spender) throw new Error('missing spender')
 
-      const allowance: BigNumberish = MaxUint256.toString()
+      const allowance: string = MaxUint256.toString()
       const response = await contract.approve(spender, allowance)
       return {
         response,
@@ -57,6 +56,7 @@ export function useUpdateTokenAllowance(
           type: TransactionType.APPROVAL,
           tokenAddress: contract.address,
           spender,
+          amount: allowance,
         },
       }
     } catch (e: unknown) {
@@ -67,4 +67,35 @@ export function useUpdateTokenAllowance(
       throw new Error(`${symbol} token allowance failed: ${e instanceof Error ? e.message : e}`)
     }
   }, [amount, contract, spender])
+}
+
+export function useResetTokenAllowance(
+  token: Token | undefined,
+  spender: string
+): () => Promise<{ response: ContractTransaction; info: ApproveTransactionInfo }> {
+  const contract = useTokenContract(token?.address)
+
+  return useCallback(async () => {
+    try {
+      if (!contract) throw new Error('missing contract')
+      if (!spender) throw new Error('missing spender')
+
+      const response = await contract.approve(spender, 0)
+      return {
+        response,
+        info: {
+          type: TransactionType.APPROVAL,
+          tokenAddress: contract.address,
+          spender,
+          amount: '0',
+        },
+      }
+    } catch (e: unknown) {
+      const symbol = token?.symbol ?? 'Token'
+      if (didUserReject(e)) {
+        throw new UserRejectedRequestError(`${symbol} token allowance failed: User rejected`)
+      }
+      throw new Error(`${symbol} token allowance failed: ${e instanceof Error ? e.message : e}`)
+    }
+  }, [contract, spender, token])
 }

@@ -87,7 +87,10 @@ const StepTitleAnimationContainer = styled(Column)<{ disableEntranceAnimation?: 
 // This component is used for all steps after ConfirmModalState.REVIEWING
 export type PendingConfirmModalState = Extract<
   ConfirmModalState,
-  ConfirmModalState.APPROVING_TOKEN | ConfirmModalState.PERMITTING | ConfirmModalState.PENDING_CONFIRMATION
+  | ConfirmModalState.APPROVING_TOKEN
+  | ConfirmModalState.PERMITTING
+  | ConfirmModalState.PENDING_CONFIRMATION
+  | ConfirmModalState.RESETTING_USDT
 >
 
 interface PendingModalStep {
@@ -105,6 +108,7 @@ interface PendingModalContentProps {
   swapTxHash?: string
   hideStepIndicators?: boolean
   tokenApprovalPending?: boolean
+  resetPending?: boolean
 }
 
 interface ContentArgs {
@@ -114,13 +118,29 @@ interface ContentArgs {
   swapConfirmed: boolean
   swapPending: boolean
   tokenApprovalPending: boolean
+  resetPending: boolean
   swapTxHash?: string
   chainId?: number
 }
 
 function getContent(args: ContentArgs): PendingModalStep {
-  const { step, approvalCurrency, swapConfirmed, swapPending, tokenApprovalPending, trade, swapTxHash, chainId } = args
+  const {
+    step,
+    approvalCurrency,
+    swapConfirmed,
+    swapPending,
+    tokenApprovalPending,
+    resetPending,
+    trade,
+    swapTxHash,
+    chainId,
+  } = args
   switch (step) {
+    case ConfirmModalState.RESETTING_USDT:
+      return {
+        title: t`Reset USDT Approval`,
+        label: resetPending ? t`Pending...` : t`Proceed in your wallet`,
+      }
     case ConfirmModalState.APPROVING_TOKEN:
       return {
         title: t`Enable spending ${approvalCurrency?.symbol ?? 'this token'} on Uniswap`,
@@ -167,6 +187,7 @@ export function PendingModalContent({
   swapTxHash,
   hideStepIndicators,
   tokenApprovalPending = false,
+  resetPending = false,
 }: PendingModalContentProps) {
   const { chainId } = useWeb3React()
   const swapConfirmed = useIsTransactionConfirmed(swapTxHash)
@@ -177,6 +198,7 @@ export function PendingModalContent({
     swapConfirmed,
     swapPending,
     tokenApprovalPending,
+    resetPending,
     swapTxHash,
     trade,
     chainId,
@@ -213,7 +235,7 @@ export function PendingModalContent({
           <LoadingIndicatorOverlay />
         )}
       </LogoContainer>
-      <HeaderContainer gap="md" $disabled={tokenApprovalPending || swapPending}>
+      <HeaderContainer gap="md" $disabled={resetPending || tokenApprovalPending || swapPending}>
         <AnimationWrapper>
           {steps.map((step) => {
             const { title, subtitle } = getContent({
@@ -222,6 +244,7 @@ export function PendingModalContent({
               swapConfirmed,
               swapPending,
               tokenApprovalPending,
+              resetPending,
               swapTxHash,
               trade,
             })
