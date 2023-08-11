@@ -104,11 +104,11 @@ export default function useClassicAutoSlippageTolerance(trade?: ClassicTrade): P
       // optimize for highest possible slippage without getting MEV'd
       // so set slippage % such that the difference between expected amount out and minimum amount out < gas fee to sandwich the trade
       console.log('UMZ Gas Cost In dollars: ',dollarCostToUse.toExact(),"Dollar value of Output: ",outputDollarValue.toExact())
-      console.log('UMZ Value$/Gas$: ',parseFloat(dollarCostToUse.toExact())/parseFloat(outputDollarValue.toExact()))
+      console.log('UMZ Gas$/Value$: ',parseFloat(dollarCostToUse.toExact())/parseFloat(outputDollarValue.toExact()))
       const fraction = dollarCostToUse.asFraction.divide(outputDollarValue.asFraction)
       const result = new Percent(fraction.numerator, fraction.denominator)
       console.log('UMZ Slippage % Uniswap: ',result.toFixed())
-      console.log('UMZ Slippage % (Value$/Gas$)*100: ',(parseFloat(dollarCostToUse.toExact())/parseFloat(outputDollarValue.toExact()))*100)
+      console.log('UMZ Slippage % (Gas$/Value$)*100: ',(parseFloat(dollarCostToUse.toExact())/parseFloat(outputDollarValue.toExact()))*100)
       if (result.greaterThan(MAX_AUTO_SLIPPAGE_TOLERANCE)) {
         return MAX_AUTO_SLIPPAGE_TOLERANCE
       }
