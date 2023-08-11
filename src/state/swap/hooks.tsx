@@ -160,7 +160,8 @@ export function useDerivedSwapInfo(state: SwapState, chainId: ChainId | undefine
 
   // allowed slippage for classic trades is either auto slippage, or custom user defined slippage if auto slippage disabled
   const classicAutoSlippage = useAutoSlippageTolerance(isClassicTrade(trade.trade) ? trade.trade : undefined)
-
+    console.log('trade',trade)
+    console.log('slippage',classicAutoSlippage.toFixed())
   // slippage for uniswapx trades is defined by the quote response
   const uniswapXAutoSlippage = isUniswapXTrade(trade.trade) ? trade.trade.slippageTolerance : undefined
 
